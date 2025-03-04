@@ -38,6 +38,7 @@ Twitch Integration Mod using Melon Loader for the Endless &amp; Relax modes in K
 - Launching the game with the mod loaded should make your bot appear in your Twitch chat
 - Available help commands: !kioskhelp (explaining the basics of how to place an order), !kioskoptions (listing the main dishes & addons you can order)
 - Use !order to order up to 4 dishes, seperated by commas. You can add addons to each dish by seperating them with spaces. For example: *!order burger lettuce onion ketchup, soda, eggs & sausages, salad lettuce tomato*
+- You can also use various shorthands (mainly 1-2 letter abbreviations and alternate names) for your orders, for example *!order h o m, p, nuggies* would order a hotdog with onion & mustard, pancakes, and nuggets
 - Use !bell [amount] to ring the service bell howevery many times you like while your order is up, for example *!bell 12*
 - Use !skin to show the available customer skins and set one, for example *!skin clown*. These are saved to the chatterSkins.cfg, so that a chatter's chosen skin will persist across sessions
 ## Contributing or editing the mod
