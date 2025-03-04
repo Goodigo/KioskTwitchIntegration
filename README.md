@@ -21,7 +21,7 @@ Twitch Integration Mod using Melon Loader for the Endless &amp; Relax modes in K
 ### Basic Configuration
 - After starting the game once with the mod loaded, there should be a twitch.cfg in your Kiosk folder
 - Add the name of the channel you want the bot to connect to, and the previously generated OAuth token for the bot
-- Launching the game should now make the bot appear in the provided channel's chat, if not check the Melon Loader console (it's likely your OAuth token)
+- Launching the game should now make the bot appear in the provided channel's chat, if not check the Melon Loader console for a reponse from the Twitch API (it's likely an issue with your OAuth token)
 ## Configuration Options (twitch.cfg)
 - You can edit & save the config at any time, it will be reloaded upon exiting to main menu or restarting Endless/Relax mode
 - **Channel:** Name of the Twitch channel you want the bot to connect to
@@ -37,8 +37,10 @@ Twitch Integration Mod using Melon Loader for the Endless &amp; Relax modes in K
 ## Usage
 - Launching the game with the mod loaded should make your bot appear in your Twitch chat
 - Available help commands: !kioskhelp (explaining the basics of how to place an order), !kioskoptions (listing the main dishes & addons you can order)
-- Use !order to order up to 4 dishes, seperated by commas. You can add addons to each dish by seperating them with spaces. For example: *!order burger lettuce onion ketchup, soda, eggs & sausages, salad lettuce tomato
+- Use !order to order up to 4 dishes, seperated by commas. You can add addons to each dish by seperating them with spaces. For example: *!order burger lettuce onion ketchup, soda, eggs & sausages, salad lettuce tomato*
 - Use !bell [amount] to ring the service bell howevery many times you like while your order is up, for example *!bell 12*
-- Use !skin to show the available customer skins and set one, for example *!skin clown*. These are saved to the chatterSkins.cfg, so that a chatter's chosen skin will persist across sessions.
+- Use !skin to show the available customer skins and set one, for example *!skin clown*. These are saved to the chatterSkins.cfg, so that a chatter's chosen skin will persist across sessions
 ## Contributing or editing the mod
 - Melon Loader lets you easily set up a VisualStudio project that hooks into the game and decompiles its code for you, check out their [tutorial](https://melonwiki.xyz/#/modders/quickstart). Once that is set up, just copy the Core.cs into your project.
+## Bugs, Suggestions & Requests
+For any issues regarding setting up the mod or feature requests, send me a message on Discord (Username: Goodigo)
