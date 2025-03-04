@@ -14,7 +14,8 @@ using UnityEngine.Rendering;
 using System.Xml.Linq;
 using static UnityEngine.Rendering.DebugUI;
 using static UnityEngine.UISystemProfilerApi;
-//using Harmony;
+using System.Collections.Generic;
+using System.Linq;
 
 [assembly: MelonInfo(typeof(Kiosk_Twitch_Integration.Core), "Kiosk Twitch Integration", "1.0.0", "Goodigo", null)]
 [assembly: MelonGame("ViviGames", "Kiosk")]
@@ -61,7 +62,7 @@ public class Core : MelonMod
 
     public static Dictionary<string, int> OrderLookup = new();
     public static Dictionary<string, int> AddonsLookup = new();
-    
+
     public static Dictionary<int, int> OrderIDToOrderIndex = new();
 
     public static Dictionary<string, int> SkinsLookup = new();
@@ -100,7 +101,7 @@ public class Core : MelonMod
     private float PingCounter = 0;
     public override void OnInitializeMelon()
     {
-
+        //translate main dish strings to IDs
         OrderLookup.Add("burger", 0);
         OrderLookup.Add("hotdog", 1);
         OrderLookup.Add("coffee", 7);
@@ -113,13 +114,14 @@ public class Core : MelonMod
         OrderLookup.Add("nuggets", 34);
         OrderLookup.Add("salad", 20);
 
+        //translate addon strings to IDs
         AddonsLookup.Add("mustard", 9);
         AddonsLookup.Add("ketchup", 10);
         AddonsLookup.Add("cheese", 13);
         AddonsLookup.Add("lettuce", 14);
         AddonsLookup.Add("onion", 23);
         AddonsLookup.Add("tomato", 25);
-        //these might be necessary to add to eggs & sausages, two of each (2,2,26,26)
+        //game adds these to eggs & sausages, two of each (2,2,26,26), seems to not be necessary
         AddonsLookup.Add("egg", 2);
         AddonsLookup.Add("sausage", 26);
 
@@ -149,6 +151,7 @@ public class Core : MelonMod
         AddonsLookup.Add("o", 23);
         AddonsLookup.Add("t", 25);
 
+        //additional lookup table for checking available addons
         OrderIDToOrderIndex.Add(0, 0);
         OrderIDToOrderIndex.Add(1, 1);
         OrderIDToOrderIndex.Add(7, 2);
@@ -162,6 +165,7 @@ public class Core : MelonMod
         OrderIDToOrderIndex.Add(20, 10);
 
 
+        //translate skin names to IDs
         SkinsLookup.Add("guy sweater", 0); //guy with grey sweater
         SkinsLookup.Add("suit red", 1); //suit red tie
         SkinsLookup.Add("suit green", 2); //suit green tie
@@ -174,6 +178,7 @@ public class Core : MelonMod
         SkinsLookup.Add("lady hat", 9); //lady hat
         SkinsLookup.Add("clown", 10); //clown
 
+        //create twitch.cfg
         twitchSettings = MelonPreferences.CreateCategory("twitch");
         twitchSettings.SetFilePath("twitch.cfg");
         twitchChannel = twitchSettings.CreateEntry<string>("Channel", "");
@@ -189,21 +194,22 @@ public class Core : MelonMod
         bellRingsMax = twitchSettings.CreateEntry<int>("Maximum Bell Rings Per Order", 0);
         skipPenalty = twitchSettings.CreateEntry<float>("Time Penalty for skipping Orders", 30);
 
-
         twitchSettings.SaveToFile();
 
+        //create chatterSkins.cfg
         chatterSkins = MelonPreferences.CreateCategory("skins");
         chatterSkins.SetFilePath("chatterSkins.cfg");
         chatterSkins.SaveToFile();
+
 
         chatterMax.OnEntryValueChanged.Subscribe(PrintConfig, 100);
         chatterCooldown.OnEntryValueChanged.Subscribe(PrintConfig, 100);
         addonsMax.OnEntryValueChanged.Subscribe(PrintConfig, 100);
 
-        LoggerInstance.Msg("Cooldown: "+chatterCooldown.Value+" Max Orders: "+chatterMax.Value);
-        LoggerInstance.Msg("Channel "+twitchChannel.Value+" Bot OAuth Token "+botAuth.Value);
+        LoggerInstance.Msg("Cooldown: " + chatterCooldown.Value + " Max Orders: " + chatterMax.Value);
+        LoggerInstance.Msg("Channel " + twitchChannel.Value + " Bot OAuth Token " + botAuth.Value);
 
-        ConnectToTwitch();
+        ConnectToTwitch();  //initial connection
 
         LoggerInstance.Msg("Initialized.");
     }
@@ -229,6 +235,7 @@ public class Core : MelonMod
     {
         if (!Twitch.Connected) ConnectToTwitch();
 
+        //ping twitch every minute so connection doesn't close
         PingCounter += Time.deltaTime;
         if (PingCounter > 60)
         {
@@ -244,7 +251,7 @@ public class Core : MelonMod
         if (Twitch.Available > 0)   //message from twitch received
         {
             string msg = Reader.ReadLine();
-            if (msg.Length>0) LoggerInstance.Msg(msg);
+            if (msg.Length > 0) LoggerInstance.Msg(msg);
 
             if (msg == ":tmi.twitch.tv NOTICE * :Login authentication failed")
             {
@@ -258,7 +265,8 @@ public class Core : MelonMod
                 SendMessage("If you're the customer at the window, all your messages will appear ingame, and you can ring the bell multiple times using for example !bell 5");
             }
 
-            if (msg.Contains("PRIVMSG")){    //is actual chat message
+            if (msg.Contains("PRIVMSG"))
+            {    //is actual chat message
                 TwitchMessage message = ParseMessage(msg);
 
                 //custom-reward-id=40a52456-6f7d-4a19-8eee-a1d20ca5b1a6
@@ -368,9 +376,9 @@ public class Core : MelonMod
     public void PrintConfig(int oldValue, int newValue)
     {
         if (oldValue != newValue)
-        SendMessage("Order cooldown is " + chatterCooldown.Value + 
-            " seconds, maximum amount of orders per chatter is " + chatterMax.Value + 
-            ", maximum addons per dish is " + addonsMax.Value);
+            SendMessage("Order cooldown is " + chatterCooldown.Value +
+                " seconds, maximum amount of orders per chatter is " + chatterMax.Value +
+                ", maximum addons per dish is " + addonsMax.Value);
     }
 
     //take a string reponse returned by Twitch, and return a TwitchMessage (text content and chatter)
@@ -401,16 +409,16 @@ public class Core : MelonMod
         if (GameManager.instance.isEndlessOrRelaxMode())
         {
             if (!nameInWorld.Value)
-            { 
+            {
                 GUI.Label(new Rect(50, Screen.height - 120, 2000, 100),
                 "<b><size=32>Order from: <color=" + currentOrder.chatter.color + ">" + currentOrder.chatter.name + "</color></size></b>");
             }
             int count = queue.Count();
             GUI.Label(new Rect(50, Screen.height - 80, 1000, 100),
-                "<b><size=26><color=#AAAAAA>" + queue.Count() + " "+(count==1?"Order":"Orders")+" in Queue</color></size></b>");
+                "<b><size=26><color=#AAAAAA>" + queue.Count() + " " + (count == 1 ? "Order" : "Orders") + " in Queue</color></size></b>");
         }
 
-        GUI.Label(new Rect(Screen.width-200, Screen.height - 20, 500, 25),
+        GUI.Label(new Rect(Screen.width - 200, Screen.height - 20, 500, 25),
                 "<b><size=12><color=#AAAAAA>Kiosk Twitch Integration loaded</color></size></b>");
     }
 
@@ -481,12 +489,13 @@ public class Core : MelonMod
             availableAddonIDs.Add(addon.addonID);
         }
 
-        foreach (string addon in addons) {
+        foreach (string addon in addons)
+        {
             if (!AddonsLookup.ContainsKey(addon)) return false; //check if addon is valid in AddonsLookup, else it crashes below on invalid addons
             if (!availableAddonIDs.Contains(AddonsLookup[addon]))
                 return false; //if not all addons are available for main dish return false
         }
-        
+
         return true;
 
     }
@@ -509,6 +518,7 @@ public class Core : MelonMod
         return false;
     }
 
+    //check if chatter already has max orders in queue
     public bool IsChatterOverMax(string name)
     {
         if (chatterMax.Value > 0)
@@ -519,6 +529,7 @@ public class Core : MelonMod
         return false;
     }
 
+    //spawn the name of the current order's chatter above the customer
     public static void AddNameToCustomer(TwitchChatter chatter)
     {
         Customer currentCustomer = CustomersController.instance.GetCurrentCustomer();
@@ -538,9 +549,10 @@ public class Core : MelonMod
 
         tmp.richText = true;
 
-        tmp.text = "<color="+chatter.color+">"+chatter.name+"</color>";
+        tmp.text = "<color=" + chatter.color + ">" + chatter.name + "</color>";
     }
 
+    //spawn the current order's chatter's messages in front of the customer
     public static void AddMessageToCustomer(string text)
     {
         if (messageTextObject) GameObject.Destroy(messageTextObject);
@@ -564,6 +576,7 @@ public class Core : MelonMod
         Melon<Core>.Logger.Msg("Displaying " + text + " next to customer");
     }
 
+    //ring the bell if possible
     public static void TryToRingBell()
     {
         float bellCooldown = 0.2f;
@@ -578,7 +591,7 @@ public class Core : MelonMod
             bellsRung++;
         }
     }
-  
+
 
     //overwrite regular random order generation in endless mode, to instead grab from the queue (filled by twitch chat)
     [HarmonyPatch(typeof(Customer), "GenerateEndlessOrder")]
