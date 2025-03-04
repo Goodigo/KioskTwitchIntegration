@@ -4,8 +4,9 @@ Twitch Integration Mod using Melon Loader for the Endless &amp; Relax modes in K
 - Twitch chatters can place their own orders, via a chat command or a channel point reward
 - Customers walking up to the window will show the name of the chatter who placed the order
 - While a chatter's order is up their chat messages will display on the customer ingame, and they can ring the service bell
-- Chatters can use a chat command to pick their customer skin from the 10 customer models in the game, persisting through sessions
+- Chatters can to pick their customer skin from the 10 customer models available in the game
 - Throwing a knife at a customer will skip their order, giving a time penalty in Endless mode
+- While the mod is loaded, no time data from Endless mode will be sent to the leaderboard
 ## Setup
 ### Mod Installation
 - Download the latest version of [Melon Loader](https://melonwiki.xyz) and install it to Kiosk
