@@ -16,8 +16,9 @@ using static UnityEngine.Rendering.DebugUI;
 using static UnityEngine.UISystemProfilerApi;
 using System.Collections.Generic;
 using System.Linq;
+using static GameManager;
 
-[assembly: MelonInfo(typeof(Kiosk_Twitch_Integration.Core), "Kiosk Twitch Integration", "1.0.0", "Goodigo", null)]
+[assembly: MelonInfo(typeof(Kiosk_Twitch_Integration.Core), "Kiosk Twitch Integration", "1.0.1", "Goodigo", null)]
 [assembly: MelonGame("ViviGames", "Kiosk")]
 [assembly: MelonAuthorColor(0, 241, 207, 71)]
 namespace Kiosk_Twitch_Integration;
@@ -418,8 +419,8 @@ public class Core : MelonMod
                 "<b><size=26><color=#AAAAAA>" + queue.Count() + " " + (count == 1 ? "Order" : "Orders") + " in Queue</color></size></b>");
         }
 
-        GUI.Label(new Rect(Screen.width - 200, Screen.height - 20, 500, 25),
-                "<b><size=12><color=#AAAAAA>Kiosk Twitch Integration loaded</color></size></b>");
+        GUI.Label(new Rect(Screen.width - 150, Screen.height - 20, 500, 25),
+                "<b><size=12><color=#AAAAAA>Twitch Integration loaded</color></size></b>");
     }
 
     //take one chat message order (comma-seperated orders, each with a main + addons) and convert it to a list of OrdedItemNew
@@ -459,8 +460,15 @@ public class Core : MelonMod
 
             if (withTheLot) //if ordered with the lot, add all available addons
             {
-                foreach (GameManager.Addon addon in GameManager.instance.availableOrders[OrderIDToOrderIndex[OrderLookup[main]]].availableAddons)
+                int addonCount = 0;
+                List<GameManager.Addon> available = GameManager.instance.availableOrders[OrderIDToOrderIndex[OrderLookup[main]]].availableAddons;
+                available.Sort((a, b) => UnityEngine.Random.Range(-10, 11));    //randomise order of available addon
+                foreach (GameManager.Addon addon in available)
+                {
+                    if (addonCount >= addonsMax.Value) break; //if max addon limit is reached, stop adding addons
                     newOrder.additions.Add(addon.addonID);
+                    addonCount++;
+                }
             }
             else //else add addons from order
             {
@@ -658,12 +666,12 @@ public class Core : MelonMod
                 GameObject.Destroy(__instance.gameObject);
                 ReactionController.instance.InvokeReaction("PlayXBadParticle");
 
-                //set ordered to true so that knife sequences doesn't play again in OnCollisionEnter
+                //set ordered to true so that knife sequence doesn't play again in OnCollisionEnter
                 typeof(Customer).GetField("ordered", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(currentCustomer, true);
 
                 Melon<Core>.Logger.Msg("KNIFE THROWN");
                 currentCustomer.GoAway();
-                TimerController.instance.SetCurrentSeconds(0f - skipPenalty.Value);
+                if (skipPenalty.Value > 0) TimerController.instance.SetCurrentSeconds(0f - skipPenalty.Value);
             }
         }
     }
